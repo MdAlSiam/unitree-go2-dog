@@ -1,0 +1,23 @@
+# Editor
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Python pipeline generated files
+python_pipeline/output/
+python_pipeline/bin/*.so
+
+# CMake / SDK build outputs (only ignore build artifacts, not the submodule)
+unitree_sdk2/build/
+
+# Local caches
+.cache/
