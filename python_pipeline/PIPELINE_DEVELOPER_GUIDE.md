@@ -234,6 +234,61 @@ Current speech backends:
 - `SystemSpeechProvider`: default runtime backend; calls local Linux TTS commands (`spd-say`, `espeak-ng`, or `espeak`) when installed.
 - `NullSpeechProvider`: log-only backend for silent/testing runs.
 
+## 4.4 Available Control Surfaces
+
+This section lists what can be controlled today from Python, and what control APIs are present in `unitree_sdk2` examples but not yet exposed through the Python pipeline.
+
+### 4.4.1 Python control surfaces (available now)
+
+| Surface | Python API | Location |
+|---|---|---|
+| Activity lifecycle | `on_start()`, `on_tick(context)`, `on_stop()` | `pipeline/contracts.py` (`Activity` protocol) |
+| Camera provider contract | `start()`, `read()`, `stop()` | `modules/camera/base.py` (`CameraProviderBase`) |
+| Speech provider contract | `start()`, `say(text)`, `stop()` | `modules/speech/base.py` (`SpeechProviderBase`) |
+| Concrete Go2 camera provider | `start()`, `read()`, `stop()` | `modules/camera/go2_camera.py` (`Go2CameraProvider`) |
+| Concrete system speech provider | `start()`, `say(text)`, `stop()` | `modules/speech/system_speech.py` (`SystemSpeechProvider`) |
+| Current default activity | `SeeAndSayActivity` | `activities/see_and_say.py` |
+| Entrypoint wiring | one activity instance passed to runner | `main.py` |
+
+### 4.4.2 SDK control surfaces (available in C++ examples)
+
+The following APIs are demonstrated under `unitree_sdk2/example/go2/`:
+
+| SDK client | APIs seen in examples | Example file |
+|---|---|---|
+| `SportClient` | `StandUp()`, `StandDown()`, `BalanceStand()`, `Move(vx, vy, vyaw)`, `Damp()`, `RecoveryStand()`, `Sit()`, `RiseSit()`, `StopMove()` | `go2_sport_client.cpp` |
+| `SportClient` (trajectory) | `TrajectoryFollow(path)` | `go2_trajectory_follow.cpp` |
+| `RobotStateClient` | `GetApiVersion()`, `GetServerApiVersion()`, `SetReportFreq(...)`, `ServiceSwitch(...)`, `ServiceList(...)` | `go2_robot_state_client.cpp` |
+| `MotionSwitcherClient` | `CheckMode(...)`, `ReleaseMode()` | `go2_stand_example.cpp` |
+| `VideoClient` | `GetImageSample(...)` | `go2_video_client.cpp` |
+| `VuiClient` | `SetBrightness(...)`, `GetBrightness(...)` | `go2_vui_client.cpp` |
+
+### 4.4.3 Current gap and extension path
+
+- Current Python pipeline wiring in `main.py` exposes camera and speech, and ships one activity (`see_and_say`).
+- A Python-accessible Go2 sport provider is now available (`modules/sport/go2_sport.py`) via `libgo2_sport_bridge.so`.
+- To use motion in activities, instantiate `Go2SportProvider`, call `start()`, and inject it into your activity alongside camera/speech providers.
+- `Go2SportProvider` can optionally take a speech provider and announce actions such as standing up, moving, and stopping move.
+- `move()` now clamps out-of-range velocity inputs to conservative values before forwarding them to the SDK.
+
+### 4.4.4 Exposure matrix (quick scan)
+
+| Control surface | Exposed in Python pipeline | Source |
+|---|---|---|
+| Activity lifecycle (`Activity`) | Yes | `pipeline/contracts.py` |
+| Camera provider (`CameraProviderBase`) | Yes | `modules/camera/base.py` |
+| Speech provider (`SpeechProviderBase`) | Yes | `modules/speech/base.py` |
+| Sport provider (`SportProviderBase`) | Yes | `modules/sport/base.py` |
+| `SeeAndSayActivity` | Yes | `activities/see_and_say.py` |
+| `VideoClient::GetImageSample(...)` | Yes (indirect via bridge) | `bridges/go2_cpp/go2_video_bridge.cpp`, `modules/camera/go2_camera.py` |
+| `SportClient` motion controls | Yes (indirect via bridge) | `bridges/go2_cpp/go2_sport_bridge.cpp`, `modules/sport/go2_sport.py` |
+| Sport action notifications | Yes, optional | `modules/sport/go2_sport.py` |
+| `move()` velocity clamping | Yes | `modules/sport/go2_sport.py` |
+| `SportClient::TrajectoryFollow(path)` | Partial (`go2_sport_trajectory_follow` currently returns unsupported) | `bridges/go2_cpp/go2_sport_bridge.cpp`, `modules/sport/go2_sport.py` |
+| `VuiClient` controls | No | `unitree_sdk2/example/go2/go2_vui_client.cpp` |
+| `RobotStateClient` service/state controls | No | `unitree_sdk2/example/go2/go2_robot_state_client.cpp` |
+| `MotionSwitcherClient` mode controls | No | `unitree_sdk2/example/go2/go2_stand_example.cpp` |
+
 ## 5. Tick Timing Model
 
 `PipelineRunner` computes:
@@ -487,6 +542,56 @@ cd unitree-go2-dog
 ./setup_sdk.sh
 ```
 
+## 13.2 How To Run The Sport Provider
+
+The default `python_pipeline.main` entrypoint still runs the camera + speech demo activity. The sport API is exposed as a Python provider and is meant to be imported from your own script or activity.
+
+Build the bridge first:
+
+```bash
+cd /path/to/unitree-go2-dog/unitree_sdk2
+cmake -S . -B build -DBUILD_PYTHON_PIPELINE_BRIDGE=ON -DBUILD_EXAMPLES=OFF
+cmake --build build -j4 --target go2_sport_bridge
+```
+
+Then use it from Python:
+
+```python
+from python_pipeline.modules.sport.go2_sport import Go2SportProvider
+
+sport = Go2SportProvider(network_interface="")
+sport.start()
+sport.stand_up()
+sport.balance_stand()
+sport.start_stand_guard(interval_s=1.0)
+
+# Long stand / idle section
+# Keep your script alive while the guard thread refreshes balance stand.
+# ...
+
+sport.stop_stand_guard()
+sport.move(0.2, 0.0, 0.0)
+sport.stop_move()
+sport.stand_down()
+sport.stop()
+```
+
+If you want to call it from a file, run it from the repository root so `python_pipeline` is on `PYTHONPATH`:
+
+```bash
+PYTHONPATH=. python3 your_script.py
+```
+
+Important:
+
+- `main.py` does not automatically use `Go2SportProvider` yet.
+- The sport provider is a control surface, not a standalone app.
+- For long standing sessions, prefer `balance_stand()` and `start_stand_guard(...)` to reduce unstable idle behavior.
+- `move(vx, vy, vyaw)` clamps out-of-range inputs to conservative limits before sending commands.
+- `move(...)` sends a short burst of velocity commands for better command latching; call it repeatedly for continuous travel.
+- `stop_move()` also sends a short stop-command burst for reliable halt behavior.
+- You should keep the robot in a safe state and verify the target motion call before expanding the sequence.
+
 ## 14. Comprehensive Flowchart
 
 ```mermaid
@@ -576,3 +681,75 @@ flowchart TD
   BL --> BM[Go2CameraProvider.start raises RuntimeError]
   BM --> BB
 ```
+
+If your Mermaid renderer does not open links inside nodes, use this clickable map:
+
+| Flow Node | Link |
+|---|---|
+| A | [main.py:24](./main.py#L24) |
+| B | [main.py:16](./main.py#L16) |
+| C | [config/settings.py:17](./config/settings.py#L17) |
+| D | [main.py:29](./main.py#L29) |
+| E | [modules/camera/go2_camera.py:14](./modules/camera/go2_camera.py#L14) |
+| F | [modules/camera/go2_camera.py:20](./modules/camera/go2_camera.py#L20) |
+| G | [modules/camera/go2_camera.py:34](./modules/camera/go2_camera.py#L34) |
+| H | [main.py:34](./main.py#L34) |
+| I | [activities/see_and_say.py:11](./activities/see_and_say.py#L11) |
+| J | [pipeline/runner.py:10](./pipeline/runner.py#L10) |
+| K | [pipeline/runner.py:19](./pipeline/runner.py#L19) |
+| L | [pipeline/runner.py:22](./pipeline/runner.py#L22) |
+| M | [pipeline/runner.py:23](./pipeline/runner.py#L23) |
+| N | [activities/see_and_say.py:27](./activities/see_and_say.py#L27) |
+| O | [activities/see_and_say.py:28](./activities/see_and_say.py#L28) |
+| P | [modules/camera/go2_camera.py:48](./modules/camera/go2_camera.py#L48) |
+| Q | [bridges/go2_cpp/go2_video_bridge.cpp:20](./bridges/go2_cpp/go2_video_bridge.cpp#L20) |
+| R | [bridges/go2_cpp/go2_video_bridge.cpp:26](./bridges/go2_cpp/go2_video_bridge.cpp#L26) |
+| S | [bridges/go2_cpp/go2_video_bridge.cpp:27](./bridges/go2_cpp/go2_video_bridge.cpp#L27) |
+| T | [bridges/go2_cpp/go2_video_bridge.cpp:29](./bridges/go2_cpp/go2_video_bridge.cpp#L29) |
+| U | [bridges/go2_cpp/go2_video_bridge.cpp:34](./bridges/go2_cpp/go2_video_bridge.cpp#L34) |
+| V | [bridges/go2_cpp/go2_video_bridge.cpp:35](./bridges/go2_cpp/go2_video_bridge.cpp#L35) |
+| W | [modules/speech/system_speech.py:17](./modules/speech/system_speech.py#L17) |
+| W1 | [modules/speech/system_speech.py:29](./modules/speech/system_speech.py#L29) |
+| X | [pipeline/runner.py:27](./pipeline/runner.py#L27) |
+| Y | [pipeline/contracts.py:14](./pipeline/contracts.py#L14) |
+| Z | [pipeline/runner.py:30](./pipeline/runner.py#L30) |
+| AA | [activities/see_and_say.py:33](./activities/see_and_say.py#L33) |
+| AB | [activities/see_and_say.py:34](./activities/see_and_say.py#L34) |
+| AC | [activities/see_and_say.py:35](./activities/see_and_say.py#L35) |
+| AD | [modules/camera/go2_camera.py:58](./modules/camera/go2_camera.py#L58) |
+| AE | [bridges/go2_cpp/go2_video_bridge.cpp:46](./bridges/go2_cpp/go2_video_bridge.cpp#L46) |
+| AF | [bridges/go2_cpp/go2_video_bridge.cpp:51](./bridges/go2_cpp/go2_video_bridge.cpp#L51) |
+| AG | [bridges/go2_cpp/go2_video_bridge.cpp:52](./bridges/go2_cpp/go2_video_bridge.cpp#L52) |
+| AH | [bridges/go2_cpp/go2_video_bridge.cpp:57](./bridges/go2_cpp/go2_video_bridge.cpp#L57) |
+| AI | [bridges/go2_cpp/go2_video_bridge.cpp:58](./bridges/go2_cpp/go2_video_bridge.cpp#L58) |
+| AJ | [bridges/go2_cpp/go2_video_bridge.cpp:59](./bridges/go2_cpp/go2_video_bridge.cpp#L59) |
+| AK | [bridges/go2_cpp/go2_video_bridge.cpp:67](./bridges/go2_cpp/go2_video_bridge.cpp#L67) |
+| AL | [bridges/go2_cpp/go2_video_bridge.cpp:74](./bridges/go2_cpp/go2_video_bridge.cpp#L74) |
+| AM | [modules/camera/go2_camera.py:64](./modules/camera/go2_camera.py#L64) |
+| AN | [modules/camera/go2_camera.py:76](./modules/camera/go2_camera.py#L76) |
+| AO | [modules/camera/go2_camera.py:74](./modules/camera/go2_camera.py#L74) |
+| AP | [activities/see_and_say.py:37](./activities/see_and_say.py#L37) |
+| AQ | [activities/see_and_say.py:38](./activities/see_and_say.py#L38) |
+| AR | [activities/see_and_say.py:42](./activities/see_and_say.py#L42) |
+| AS | [activities/see_and_say.py:43](./activities/see_and_say.py#L43) |
+| AT | [activities/see_and_say.py:33](./activities/see_and_say.py#L33) |
+| AU | [pipeline/runner.py:30](./pipeline/runner.py#L30) |
+| AV | [pipeline/runner.py:31](./pipeline/runner.py#L31) |
+| AW | [pipeline/runner.py:32](./pipeline/runner.py#L32) |
+| AX | [pipeline/runner.py:33](./pipeline/runner.py#L33) |
+| AY | [pipeline/runner.py:34](./pipeline/runner.py#L34) |
+| AZ | [pipeline/runner.py:27](./pipeline/runner.py#L27) |
+| BA | [pipeline/runner.py:27](./pipeline/runner.py#L27) |
+| BB | [pipeline/runner.py:36](./pipeline/runner.py#L36) |
+| BC | [pipeline/runner.py:36](./pipeline/runner.py#L36) |
+| BD | [activities/see_and_say.py:53](./activities/see_and_say.py#L53) |
+| BE0 | [modules/speech/system_speech.py:29](./modules/speech/system_speech.py#L29) |
+| BE | [modules/speech/system_speech.py:44](./modules/speech/system_speech.py#L44) |
+| BF | [modules/camera/go2_camera.py:80](./modules/camera/go2_camera.py#L80) |
+| BG | [bridges/go2_cpp/go2_video_bridge.cpp:83](./bridges/go2_cpp/go2_video_bridge.cpp#L83) |
+| BH | [bridges/go2_cpp/go2_video_bridge.cpp:85](./bridges/go2_cpp/go2_video_bridge.cpp#L85) |
+| BI | [pipeline/runner.py:39](./pipeline/runner.py#L39) |
+| BJ | [main.py:46](./main.py#L46) |
+| BK | [bridges/go2_cpp/go2_video_bridge.cpp:38](./bridges/go2_cpp/go2_video_bridge.cpp#L38) |
+| BL | [bridges/go2_cpp/go2_video_bridge.cpp:41](./bridges/go2_cpp/go2_video_bridge.cpp#L41) |
+| BM | [modules/camera/go2_camera.py:53](./modules/camera/go2_camera.py#L53) |
