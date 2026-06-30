@@ -99,6 +99,48 @@ class Go2SportProvider(SportProviderBase):
         lib.go2_sport_trajectory_follow.argtypes = [POINTER(_CPathPoint), c_int]
         lib.go2_sport_trajectory_follow.restype = c_int
 
+        lib.go2_sport_hello.argtypes = []
+        lib.go2_sport_hello.restype = c_int
+
+        lib.go2_sport_content.argtypes = []
+        lib.go2_sport_content.restype = c_int
+
+        lib.go2_sport_heart.argtypes = []
+        lib.go2_sport_heart.restype = c_int
+
+        lib.go2_sport_pose.argtypes = [c_int]
+        lib.go2_sport_pose.restype = c_int
+
+        lib.go2_sport_scrape.argtypes = []
+        lib.go2_sport_scrape.restype = c_int
+
+        lib.go2_sport_dance1.argtypes = []
+        lib.go2_sport_dance1.restype = c_int
+
+        lib.go2_sport_dance2.argtypes = []
+        lib.go2_sport_dance2.restype = c_int
+
+        lib.go2_sport_front_flip.argtypes = []
+        lib.go2_sport_front_flip.restype = c_int
+
+        lib.go2_sport_back_flip.argtypes = []
+        lib.go2_sport_back_flip.restype = c_int
+
+        lib.go2_sport_left_flip.argtypes = []
+        lib.go2_sport_left_flip.restype = c_int
+
+        lib.go2_sport_front_jump.argtypes = []
+        lib.go2_sport_front_jump.restype = c_int
+
+        lib.go2_sport_front_pounce.argtypes = []
+        lib.go2_sport_front_pounce.restype = c_int
+
+        lib.go2_sport_hand_stand.argtypes = [c_int]
+        lib.go2_sport_hand_stand.restype = c_int
+
+        lib.go2_sport_stretch.argtypes = []
+        lib.go2_sport_stretch.restype = c_int
+
         lib.go2_sport_shutdown.argtypes = []
         lib.go2_sport_shutdown.restype = None
 
@@ -302,7 +344,100 @@ class Go2SportProvider(SportProviderBase):
             return
 
         self.stop_stand_guard()
+
+        # Best-effort command neutralization before tearing down the SDK client.
+        try:
+            for _ in range(self._STOP_COMMAND_BURST_COUNT):
+                self._bridge.go2_sport_stop_move()
+                time.sleep(self._MOVE_COMMAND_BURST_INTERVAL_S)
+        except Exception as exc:
+            self._logger.warning("Best-effort stop_move during shutdown failed: %s", exc)
+
         self._bridge.go2_sport_shutdown()
         self._started = False
         self._logger.info("Go2 sport provider stopped")
         self._notify("Sport control stopped.")
+
+    def hello(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("hello")
+        self._call("go2_sport_hello", self._bridge.go2_sport_hello())
+        self._notify("Hello gesture.")
+
+    def content(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("content")
+        self._call("go2_sport_content", self._bridge.go2_sport_content())
+        self._notify("Content pose.")
+
+    def heart(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("heart")
+        self._call("go2_sport_heart", self._bridge.go2_sport_heart())
+        self._notify("Heart gesture.")
+
+    def pose(self, flag: bool = True) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("pose")
+        self._call("go2_sport_pose", self._bridge.go2_sport_pose(c_int(1 if flag else 0)))
+        self._notify("Pose gesture.")
+
+    def scrape(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("scrape")
+        self._call("go2_sport_scrape", self._bridge.go2_sport_scrape())
+        self._notify("Scrape gesture.")
+
+    def dance1(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("dance1")
+        self._call("go2_sport_dance1", self._bridge.go2_sport_dance1())
+        self._notify("Dance sequence 1.")
+
+    def dance2(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("dance2")
+        self._call("go2_sport_dance2", self._bridge.go2_sport_dance2())
+        self._notify("Dance sequence 2.")
+
+    def front_flip(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("front_flip")
+        self._call("go2_sport_front_flip", self._bridge.go2_sport_front_flip())
+        self._notify("Front flip.")
+
+    def back_flip(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("back_flip")
+        self._call("go2_sport_back_flip", self._bridge.go2_sport_back_flip())
+        self._notify("Back flip.")
+
+    def left_flip(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("left_flip")
+        self._call("go2_sport_left_flip", self._bridge.go2_sport_left_flip())
+        self._notify("Left flip.")
+
+    def front_jump(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("front_jump")
+        self._call("go2_sport_front_jump", self._bridge.go2_sport_front_jump())
+        self._notify("Front jump.")
+
+    def front_pounce(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("front_pounce")
+        self._call("go2_sport_front_pounce", self._bridge.go2_sport_front_pounce())
+        self._notify("Front pounce.")
+
+    def hand_stand(self, flag: bool = True) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("hand_stand")
+        self._call("go2_sport_hand_stand", self._bridge.go2_sport_hand_stand(c_int(1 if flag else 0)))
+        self._notify("Handstand pose.")
+
+    def stretch(self) -> None:
+        self._ensure_started()
+        self._disable_guard_for_action("stretch")
+        self._call("go2_sport_stretch", self._bridge.go2_sport_stretch())
+        self._notify("Stretch.")

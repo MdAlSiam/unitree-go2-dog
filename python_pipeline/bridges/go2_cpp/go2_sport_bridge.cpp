@@ -153,6 +153,132 @@ extern "C" int go2_sport_trajectory_follow(const go2_path_point_t* points, int c
     return -5;
 }
 
+extern "C" int go2_sport_hello() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->Hello();
+}
+
+extern "C" int go2_sport_content() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->Content();
+}
+
+extern "C" int go2_sport_heart() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->Heart();
+}
+
+extern "C" int go2_sport_pose(int flag) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->Pose(flag != 0);
+}
+
+extern "C" int go2_sport_scrape() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->Scrape();
+}
+
+extern "C" int go2_sport_dance1() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->Dance1();
+}
+
+extern "C" int go2_sport_dance2() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->Dance2();
+}
+
+extern "C" int go2_sport_front_flip() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->FrontFlip();
+}
+
+extern "C" int go2_sport_back_flip() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->BackFlip();
+}
+
+extern "C" int go2_sport_left_flip() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->LeftFlip();
+}
+
+extern "C" int go2_sport_front_jump() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->FrontJump();
+}
+
+extern "C" int go2_sport_front_pounce() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->FrontPounce();
+}
+
+extern "C" int go2_sport_hand_stand(int flag) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->HandStand(flag != 0);
+}
+
+extern "C" int go2_sport_stretch() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    int init_ret = EnsureInitialized();
+    if (init_ret != 0) {
+        return init_ret;
+    }
+    return g_sport_client->Stretch();
+}
+
 extern "C" void go2_sport_shutdown() {
     std::lock_guard<std::mutex> lock(g_mutex);
     g_sport_client.reset();

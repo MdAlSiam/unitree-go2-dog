@@ -5,8 +5,40 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from python_pipeline.activities.damp import DampActivity
 from python_pipeline.activities.go_motion import GoBackwardActivity, GoForwardActivity
 from python_pipeline.activities.see_and_say import SeeAndSayActivity
+from python_pipeline.activities.sport_single_tests import (
+    SportBackwardActivity,
+    SportBalanceStandActivity,
+    SportBackFlipActivity,
+    SportContentActivity,
+    SportDampActivity,
+    SportDance1Activity,
+    SportDance2Activity,
+    SportDisableStandGuardActivity,
+    SportEnableStandGuardActivity,
+    SportForwardActivity,
+    SportFrontFlipActivity,
+    SportFrontJumpActivity,
+    SportFrontPounceActivity,
+    SportHandStandActivity,
+    SportHeartActivity,
+    SportHelloActivity,
+    SportLeftFlipActivity,
+    SportPoseActivity,
+    SportPrepCalibrateActivity,
+    SportRecoveryStandActivity,
+    SportRiseSitActivity,
+    SportRotateLeftActivity,
+    SportRotateRightActivity,
+    SportScrapeActivity,
+    SportSitActivity,
+    SportSpeedLevelActivity,
+    SportStandUpActivity,
+    SportStretchActivity,
+)
+from python_pipeline.activities.sport_voice_test import SportVoiceTestActivity
 from python_pipeline.config.settings import load_settings
 from python_pipeline.modules.camera.go2_camera import Go2CameraProvider
 from python_pipeline.modules.speech.null_speech import NullSpeechProvider
@@ -98,10 +130,338 @@ def main() -> int:
                 speech=speech,
             ),
         ),
+        (
+            "Sport Voice Test (All-in-One)",
+            lambda: SportVoiceTestActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_prep_calibrate",
+            lambda: SportPrepCalibrateActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_stand_up",
+            lambda: SportStandUpActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_balance_stand",
+            lambda: SportBalanceStandActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_enable_stand_guard",
+            lambda: SportEnableStandGuardActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_disable_stand_guard",
+            lambda: SportDisableStandGuardActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_speed_level",
+            lambda: SportSpeedLevelActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_rotate_left",
+            lambda: SportRotateLeftActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_forward",
+            lambda: SportForwardActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_backward",
+            lambda: SportBackwardActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_rotate_right",
+            lambda: SportRotateRightActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_damp",
+            lambda: SportDampActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_recovery_stand",
+            lambda: SportRecoveryStandActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_sit",
+            lambda: SportSitActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_rise_sit",
+            lambda: SportRiseSitActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_hello",
+            lambda: SportHelloActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_content",
+            lambda: SportContentActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_heart",
+            lambda: SportHeartActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_pose",
+            lambda: SportPoseActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_scrape",
+            lambda: SportScrapeActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_dance1",
+            lambda: SportDance1Activity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_dance2",
+            lambda: SportDance2Activity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_front_flip",
+            lambda: SportFrontFlipActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_back_flip",
+            lambda: SportBackFlipActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_left_flip",
+            lambda: SportLeftFlipActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_front_jump",
+            lambda: SportFrontJumpActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_front_pounce",
+            lambda: SportFrontPounceActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_hand_stand",
+            lambda: SportHandStandActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "sport_stretch",
+            lambda: SportStretchActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
+        (
+            "Damp",
+            lambda: DampActivity(
+                sport=Go2SportProvider(
+                    network_interface=settings.network_interface,
+                    bridge_path=Path(__file__).resolve().parent / "bin" / "libgo2_sport_bridge.so",
+                ),
+                speech=speech,
+            ),
+        ),
     ]
 
     activity_names = [name for name, _ in activity_factories]
     interactive_mode = sys.stdin.isatty()
+
+    # Check for command-line activity name: python3 main.py <activity_name>
+    cli_activity_name = None
+    if len(sys.argv) > 1:
+        cli_activity_name = sys.argv[1].lower()
+        interactive_mode = False
+        # Find matching activity
+        for idx, (name, _) in enumerate(activity_factories):
+            if name.lower() == cli_activity_name or name.lower().split()[0] == cli_activity_name:
+                selected_index = idx
+                selected_name, selected_factory = activity_factories[selected_index]
+                logger.info("CLI activity: %s", selected_name)
+                activity = selected_factory()
+
+                runner = PipelineRunner(activities=[activity], tick_hz=settings.tick_hz)
+                run_max_ticks = 1  # CLI activities are one-shot
+
+                try:
+                    runner.run(max_ticks=run_max_ticks)
+                except KeyboardInterrupt:
+                    logger.info("Activity interrupted")
+
+                return 0
+        
+        logger.error("Unknown activity: %s", cli_activity_name)
+        print(f"Unknown activity: {cli_activity_name}")
+        print(f"Available activities: {', '.join(name.lower() for name, _ in activity_factories)}")
+        return 1
 
     while True:
         selected_index = _prompt_activity_index(activity_names)
@@ -115,7 +475,7 @@ def main() -> int:
 
         runner = PipelineRunner(activities=[activity], tick_hz=settings.tick_hz)
         run_max_ticks = settings.max_ticks
-        if activity.name in {"go_forward", "go_backward"}:
+        if activity.name in {"go_forward", "go_backward", "sport_voice_test", "damp"} or activity.name.startswith("sport_"):
             # These activities execute their full motion sequence in on_start().
             # One tick is enough before clean shutdown and return to the menu.
             run_max_ticks = 1

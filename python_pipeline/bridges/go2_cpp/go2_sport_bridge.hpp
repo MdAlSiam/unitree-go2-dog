@@ -29,6 +29,20 @@ int go2_sport_sit();
 int go2_sport_rise_sit();
 int go2_sport_stop_move();
 int go2_sport_trajectory_follow(const go2_path_point_t* points, int count);
+int go2_sport_hello();
+int go2_sport_content();
+int go2_sport_heart();
+int go2_sport_pose(int flag);
+int go2_sport_scrape();
+int go2_sport_dance1();
+int go2_sport_dance2();
+int go2_sport_front_flip();
+int go2_sport_back_flip();
+int go2_sport_left_flip();
+int go2_sport_front_jump();
+int go2_sport_front_pounce();
+int go2_sport_hand_stand(int flag);
+int go2_sport_stretch();
 void go2_sport_shutdown();
 
 #ifdef __cplusplus
